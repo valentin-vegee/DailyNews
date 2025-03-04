@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     }
   },
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/components/HelloWorld.vue",
+    "src/components/TheWelcome.vue",
+    "src/components//WelcomeItem.vue",
+    "src/views/About.vue"
+  ]
 }

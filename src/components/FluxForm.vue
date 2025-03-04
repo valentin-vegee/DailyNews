@@ -1,29 +1,49 @@
 <template>
-  <form @submit.prevent="handleSubmit">
-    <input v-model="title" placeholder="Nom du flux" required />
-    <input v-model="url" placeholder="URL du flux" required />
-    <button type="submit">{{ isEdit ? 'Modifier' : 'Ajouter' }}</button>
-  </form>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-import { useRssStore } from '@/store/rssStore';
-
-const store = useRssStore();
-const title = ref('');
-const url = ref('');
-const isEdit = ref(false);
+    <form @submit.prevent="handleSubmit">
+      <input v-model="formData.title" placeholder="Nom du flux" required />
+      <input v-model="formData.url" placeholder="URL du flux" required />
+      <button type="submit">{{ formData.id ? 'Modifier' : 'Ajouter' }}</button>
+    </form>
+  </template>
+  
+  <script setup>
+  import { ref, watch } from 'vue';
+  import { useRssStore } from '@/store/rssStore';
+  
+  const store = useRssStore();
+  const props = defineProps(['fluxToEdit']);
+  const emit = defineEmits(['flux-saved']);
+  
+  const formData = ref({ title: '', url: '', id: null });
+  
+  watch(() => props.fluxToEdit, (newVal) => {
+    if (newVal) formData.value = { ...newVal };
+  }, { deep: true });
+  
+  const isValidURL = (url) => {
+  const regex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+  return regex.test(url);
+};
 
 const handleSubmit = () => {
-  if (!title.value || !url.value) {
-    alert('Tous les champs sont obligatoires !');
+  if (!formData.value.title || !formData.value.url) {
+    alert("Tous les champs sont obligatoires !");
     return;
   }
-  if (isEdit.value) {
-    store.updateFlux({ title: title.value, url: url.value });
-  } else {
-    store.addFlux({ id: Date.now(), title: title.value, url: url.value });
+  if (!isValidURL(formData.value.url)) {
+    alert("Le format de l'URL est invalide !");
+    return;
   }
+  if (formData.value.id) {
+    store.updateFlux(formData.value);
+  } else {
+    store.addFlux({ id: Date.now(), title: formData.value.title, url: formData.value.url });
+  }
+  emit('flux-saved');
+  formData.value = { title: '', url: '', id: null };
 };
-</script>
+
+
+
+  </script>
+  

@@ -1,13 +1,24 @@
 <template>
-    <div v-if="news">
-      <h1>{{ news.title }}</h1>
-      <img v-if="news.image" :src="news.image" alt="Image de l'actualité" />
-      <p>{{ news.content }}</p>
-      <button @click="addToPreferences">Sauvegarder</button>
-      <router-link to="/flux">Retour aux flux</router-link>
+    <div v-if="flux">
+      <h1>{{ flux.title }}</h1>
+      <div v-if="feedItems.length">
+        <ul>
+          <li v-for="item in feedItems" :key="item.guid">
+            <h2>{{ item.title }}</h2>
+            <p v-html="item.description"></p>
+            <small>{{ item.pubDate }}</small>
+          </li>
+        </ul>
+      </div>
+      <div v-else>
+        <p>Aucun article trouvé dans ce flux.</p>
+      </div>
+      <button @click="store.addToPreferences(flux)">⭐ Sauvegarder ce flux</button>
+      <router-link to="/flux">🔙 Retour aux flux</router-link>
     </div>
     <div v-else>
-      <h1>News introuvable</h1>
+      <h1>Flux introuvable</h1>
+      <p>Impossible de trouver ce flux. Vérifiez que vous avez bien sélectionné un flux RSS.</p>
       <router-link to="/">Retour à l'accueil</router-link>
     </div>
   </template>
@@ -16,34 +27,36 @@
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useRssStore } from '@/store/rssStore';
+  import { fetchRSS } from '@/utils/fetchRSS';
   
   const route = useRoute();
   const router = useRouter();
   const store = useRssStore();
-  const news = ref(null);
   
-  onMounted(() => {
-    const newsId = route.params.id;
-    news.value = store.newsList.find(n => n.id == newsId) || null;
+  const flux = ref(null);
+  const feedItems = ref([]);
   
-    if (!news.value) {
+  onMounted(async () => {
+    flux.value = store.fluxList.find(f => f.id == route.params.id) || null;
+    
+    if (!flux.value) {
       setTimeout(() => {
         router.push('/not-found');
       }, 2000);
+      return;
+    }
+    
+    try {
+      const xmlDoc = await fetchRSS(flux.value.url);
+      feedItems.value = Array.from(xmlDoc.querySelectorAll("item")).map(item => ({
+        title: item.querySelector("title")?.textContent || '',
+        description: item.querySelector("description")?.textContent || '',
+        guid: item.querySelector("guid")?.textContent || item.querySelector("link")?.textContent || '',
+        pubDate: item.querySelector("pubDate")?.textContent || ''
+      }));
+    } catch (error) {
+      console.error("Erreur lors de la récupération du flux RSS :", error);
     }
   });
-  
-  const addToPreferences = () => {
-    store.addToPreferences(news.value);
-    alert("News ajoutée aux préférences !");
-  };
   </script>
-  
-  <style scoped>
-  img {
-    max-width: 100%;
-    height: auto;
-    margin: 10px 0;
-  }
-  </style>
   
