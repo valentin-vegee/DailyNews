@@ -13,7 +13,6 @@ import NewsFull from '@/views/NewsFull.vue';
 const routes = [
   { path: '/', component: Home },
   { path: '/flux', component: FluxList },
-  //   { path: '/news/:id', component: NewsDetails },
   { path: '/flux/:id/news', component: NewsList },
   { path: '/news-details/:id', component: NewsFull },
   { path: '/preferences', component: Preferences },

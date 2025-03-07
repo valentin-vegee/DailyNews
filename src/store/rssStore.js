@@ -7,10 +7,7 @@ export const useRssStore = defineStore('rss', {
     currentFlux: null,
   }),
   actions: {
-    // addFlux(newFlux) {
-    //   this.fluxList.push(newFlux);
-    //   localStorage.setItem('fluxList', JSON.stringify(this.fluxList));
-    // },
+   
     addFlux(newFlux) {
       const duplicate = this.fluxList.find(flux =>
         flux.url.toLowerCase() === newFlux.url.toLowerCase() ||
