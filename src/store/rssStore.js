@@ -7,10 +7,25 @@ export const useRssStore = defineStore('rss', {
     currentFlux: null,
   }),
   actions: {
+    // addFlux(newFlux) {
+    //   this.fluxList.push(newFlux);
+    //   localStorage.setItem('fluxList', JSON.stringify(this.fluxList));
+    // },
     addFlux(newFlux) {
+      const duplicate = this.fluxList.find(flux =>
+        flux.url.toLowerCase() === newFlux.url.toLowerCase() ||
+        flux.title.toLowerCase() === newFlux.title.toLowerCase()
+      );
+    
+      if (duplicate) {
+        alert("Ce flux existe déjà !");
+        return;
+      }
+    
       this.fluxList.push(newFlux);
       localStorage.setItem('fluxList', JSON.stringify(this.fluxList));
     },
+    
     removeFlux(id) {
       this.fluxList = this.fluxList.filter(flux => flux.id !== id);
       localStorage.setItem('fluxList', JSON.stringify(this.fluxList));
